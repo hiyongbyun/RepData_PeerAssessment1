@@ -34,14 +34,13 @@ median(totalstepsperday)
 ## What is the average daily activity pattern?
 Time series plot of the average number of steps taken per day
 ```{r}
-averagestepsperday <- tapply(activity$steps, activity$date, mean)
-plot(averagestepsperday, type="l", xlab="Time (Days)", ylab="Average Number of Steps", main="Time Series of Average Number of Steps")
+averagestepsinterval <- tapply(activity$steps, activity$interval, mean)
+plot(averagestepsinterval, type="l", xlab="5 Minute Intervals", ylab="Average Number of Steps", main="Time Series of Average Number of Steps")
 ```
 
-5-minute interval that contains the maximum number of steps
+The 5-minute interval, on average across all the days in the dataset that contains the maximum number of steps
 ```{r}
-intervalstepsmax <- tapply(activity$steps, activity$interval, max)
-plot(intervalstepsmax, type="l", xlab="5 Minute Intervals", ylab="Maximum Number of Steps", main="Time Series of Maximum Number of Steps")
+averagestepsinterval[which.max(averagestepsinterval)]
 ```
 
 ## Imputing missing values
@@ -74,7 +73,7 @@ for (i in 1:nrow(activityimputed)) {
 Histogram of the total number of steps taken each day after missing values are imputed
 ```{r}
 stepsimputed <- tapply(activityimputed$steps, activityimputed$date, sum)
-hist(stepsimputed, breaks = 30, main="Histogram of Total Steps per Day")
+hist(stepsimputed, breaks = 30, xlab="Total Steps per Day", main="Histogram of Total Steps per Day")
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
