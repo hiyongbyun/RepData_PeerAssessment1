@@ -1,25 +1,106 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+author: "Hiyong Byun"
+date: "26/05/2019"
+output: html_document
+keep_md: true
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+```
 
 ## Loading and preprocessing the data
-
-
+```{r}
+library(readr)
+library(dplyr)
+activity <- read_csv("activity.csv")
+activity <- na.omit(activity)
+```
 
 ## What is mean total number of steps taken per day?
+Histogram of the total number of steps taken each day
+```{r}
+totalstepsperday <- tapply(activity$steps, activity$date, sum)
+hist(totalstepsperday, breaks = 30, xlab="Total Steps per Day", main="Histogram of Total Steps per Day")
+```
 
+Mean and median of the total number of steps taken per day
+```{r}
+mean(totalstepsperday)
+median(totalstepsperday)
+```
 
 
 ## What is the average daily activity pattern?
+Time series plot of the average number of steps taken per day
+```{r}
+averagestepsperday <- tapply(activity$steps, activity$date, mean)
+plot(averagestepsperday, type="l", xlab="Time (Days)", ylab="Average Number of Steps", main="Time Series of Average Number of Steps")
+```
 
-
+5-minute interval that contains the maximum number of steps
+```{r}
+intervalstepsmax <- tapply(activity$steps, activity$interval, max)
+plot(intervalstepsmax, type="l", xlab="5 Minute Intervals", ylab="Maximum Number of Steps", main="Time Series of Maximum Number of Steps")
+```
 
 ## Imputing missing values
+```{r}
+activityimputed <- read_csv("activity.csv", col_types = cols(date = col_date(format = "%Y-%m-%d")))
+```
 
+Number of missing values
+```{r}
+sum(is.na(activityimputed$steps))
+```
 
+Calculate average number of steps for each interval
+```{r}
+intervalstepsmean <- tapply(activity$steps, activity$interval, mean)
+```
+
+Replace NA values with average number of steps for each interval
+```{r}
+intervalstepsmeandf <- as.data.frame(intervalstepsmean)
+intervalstepsmeandf$interval <- rownames(intervalstepsmeandf)
+for (i in 1:nrow(activityimputed)) {
+        if (is.na(activityimputed$steps[i])) {
+                x <- activityimputed$interval[i]
+                activityimputed$steps[i] <- intervalstepsmeandf[intervalstepsmeandf$interval==x,1]
+        }
+}
+```
+
+Histogram of the total number of steps taken each day after missing values are imputed
+```{r}
+stepsimputed <- tapply(activityimputed$steps, activityimputed$date, sum)
+hist(stepsimputed, breaks = 30, main="Histogram of Total Steps per Day")
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+Indicate weekday or weekend in new column in data frame
+```{r}
+for (i in 1:nrow(activityimputed)) {
+        if (weekdays(as.POSIXlt(activityimputed$date[i])) == c("Saturday","Sunday")) {
+                activityimputed$day[i] <- "weekend"
+        } else {
+                activityimputed$day[i] <- "weekday"
+        }
+}
+```
+
+Split data frame into weekday and weekend
+```{r}
+activityweekday <- filter(activityimputed, day=="weekday")
+activityweekend <- filter(activityimputed, day=="weekend")
+meanstepsweekday <- tapply(activityweekday$steps, activityweekday$interval, mean)
+meanstepsweekend <- tapply(activityweekend$steps, activityweekend$interval, mean)
+```
+
+Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+```{r}
+par(mfcol=c(2,1))
+plot(meanstepsweekday, type="l", xlab="5 Minute Intervals", ylab="Average Steps Weekday")
+plot(meanstepsweekend, type="l", xlab="5 Minute Intervals", ylab="Average Steps Weekend")
+```
