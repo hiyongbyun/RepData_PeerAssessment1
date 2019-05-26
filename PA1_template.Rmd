@@ -31,7 +31,6 @@ mean(totalstepsperday)
 median(totalstepsperday)
 ```
 
-
 ## What is the average daily activity pattern?
 Time series plot of the average number of steps taken per day
 ```{r}
